@@ -51,6 +51,7 @@ mutable struct Player
     xp_to_next::Int
     gold::Int
     potions::Int
+    weapon_tier::Int
 end
 
 # Create character based on class choice
@@ -79,6 +80,19 @@ end
 
 function update_mana(char::Warlock, new_mana::Int)
     return Warlock(char.name, char.hp, char.max_hp, char.attack, char.defense, new_mana, char.max_mana, char.special_ability)
+end
+
+# Update attack stat for weapon upgrades
+function update_attack(char::Warrior, new_attack::Int)
+    return Warrior(char.name, char.hp, char.max_hp, new_attack, char.defense, char.special_ability)
+end
+
+function update_attack(char::Warlock, new_attack::Int)
+    return Warlock(char.name, char.hp, char.max_hp, new_attack, char.defense, char.mana, char.max_mana, char.special_ability)
+end
+
+function update_attack(char::Archer, new_attack::Int)
+    return Archer(char.name, char.hp, char.max_hp, new_attack, char.defense, char.agility, char.special_ability)
 end
 
 # Level up character
@@ -123,7 +137,8 @@ end
 
 # Generate random enemy
 function generate_enemy(player_level::Int)
-    enemies = [
+    # Basic enemies (levels 1-4)
+    basic_enemies = [
         ("Goblin", 40, 8, 3, 15),
         ("Skeleton", 50, 10, 5, 20),
         ("Orc", 70, 12, 6, 30),
@@ -131,7 +146,44 @@ function generate_enemy(player_level::Int)
         ("Troll", 90, 14, 8, 45)
     ]
 
-    name, base_hp, base_atk, base_def, base_xp = rand(enemies)
+    # Tier 1 enemies (levels 5-9)
+    tier1_enemies = [
+        ("Wraith", 110, 18, 7, 55),
+        ("Blood Wolf", 100, 20, 9, 60)
+    ]
+
+    # Tier 2 enemies (levels 10-14)
+    tier2_enemies = [
+        ("Shadow Knight", 140, 24, 12, 75),
+        ("Elemental", 120, 28, 8, 80)
+    ]
+
+    # Tier 3 enemies (levels 15-19)
+    tier3_enemies = [
+        ("Demon Lord", 180, 32, 15, 100),
+        ("Ancient Dragon", 200, 30, 18, 110)
+    ]
+
+    # Tier 4 enemies (levels 20+)
+    tier4_enemies = [
+        ("Void Titan", 240, 38, 20, 130),
+        ("Lich King", 220, 42, 16, 140)
+    ]
+
+    # Select enemy pool based on player level
+    if player_level >= 20
+        enemy_pool = vcat(basic_enemies, tier1_enemies, tier2_enemies, tier3_enemies, tier4_enemies)
+    elseif player_level >= 15
+        enemy_pool = vcat(basic_enemies, tier1_enemies, tier2_enemies, tier3_enemies)
+    elseif player_level >= 10
+        enemy_pool = vcat(basic_enemies, tier1_enemies, tier2_enemies)
+    elseif player_level >= 5
+        enemy_pool = vcat(basic_enemies, tier1_enemies)
+    else
+        enemy_pool = basic_enemies
+    end
+
+    name, base_hp, base_atk, base_def, base_xp = rand(enemy_pool)
     level_mult = 1 + (player_level - 1) * 0.3
 
     return Enemy(
@@ -281,6 +333,78 @@ function combat(player::Player, enemy::Enemy)
     return player, false
 end
 
+# Get weapon name and cost based on class and tier
+function get_weapon_info(char::CharacterClass, tier::Int)
+    if isa(char, Warrior)
+        weapons = ["Iron Sword", "Steel Greatsword", "Dragonbone Blade", "Excalibur"]
+        costs = [100, 250, 500, 1000]
+    elseif isa(char, Warlock)
+        weapons = ["Oak Staff", "Obsidian Rod", "Staff of the Archmage", "Void Scepter"]
+        costs = [100, 250, 500, 1000]
+    elseif isa(char, Archer)
+        weapons = ["Longbow", "Composite Bow", "Elven Bow", "Shadowstrike"]
+        costs = [100, 250, 500, 1000]
+    end
+
+    if tier >= 1 && tier <= 4
+        return weapons[tier], costs[tier]
+    else
+        return nothing, 0
+    end
+end
+
+# Shop system
+function shop(player::Player)
+    println("\n🏪 ═══════════════ SHOP ═══════════════")
+    println("Your Gold: $(player.gold)")
+    println("\n1. Health Potion - 20 Gold (Restores 50 HP)")
+
+    # Calculate available weapon tier based on level
+    available_tier = div(player.level - 1, 5) + 1
+
+    # Show weapon upgrade if player qualifies and hasn't bought it yet
+    if player.level >= 5 && player.weapon_tier < available_tier
+        weapon_name, weapon_cost = get_weapon_info(player.character, player.weapon_tier + 1)
+        if weapon_name !== nothing
+            println("2. $weapon_name - $weapon_cost Gold (+5 Attack)")
+            println("   ⭐ Unlocked at level $(5 * player.weapon_tier + 5)!")
+        end
+        println("3. Leave")
+    else
+        println("2. Leave")
+    end
+
+    print("> ")
+    shop_choice = readline()
+
+    if shop_choice == "1"
+        if player.gold >= 20
+            player.gold -= 20
+            player.potions += 1
+            println("✅ Purchased Health Potion!")
+        else
+            println("❌ Not enough gold!")
+        end
+    elseif shop_choice == "2"
+        # Check if option 2 is a weapon or leave
+        if player.level >= 5 && player.weapon_tier < available_tier
+            weapon_name, weapon_cost = get_weapon_info(player.character, player.weapon_tier + 1)
+            if weapon_name !== nothing && player.gold >= weapon_cost
+                player.gold -= weapon_cost
+                player.weapon_tier += 1
+                new_attack = player.character.attack + 5
+                player.character = update_attack(player.character, new_attack)
+                println("✅ Purchased $weapon_name! Attack increased to $(new_attack)!")
+            elseif weapon_name !== nothing
+                println("❌ Not enough gold!")
+            end
+        end
+    elseif shop_choice == "3" && player.level >= 5 && player.weapon_tier < available_tier
+        # Leave shop (only option 3 if weapon is available)
+        return
+    end
+end
+
 # Main game loop
 function game_loop()
     println("═══════════════════════════════════")
@@ -299,7 +423,7 @@ function game_loop()
     class_choice = parse(Int, readline())
     character = create_character(class_choice, char_name)
 
-    player = Player(character, 1, 0, 100, 0, 3)
+    player = Player(character, 1, 0, 100, 0, 3, 0)
 
     println("\n⚔️  Your adventure begins, $(char_name)!")
 
@@ -325,21 +449,7 @@ function game_loop()
             display_stats(player)
 
         elseif action == "shop"
-            println("\n🏪 Shop")
-            println("1. Health Potion - 20 Gold")
-            println("2. Leave")
-            print("> ")
-            shop_choice = readline()
-
-            if shop_choice == "1"
-                if player.gold >= 20
-                    player.gold -= 20
-                    player.potions += 1
-                    println("✅ Purchased Health Potion!")
-                else
-                    println("❌ Not enough gold!")
-                end
-            end
+            shop(player)
 
         elseif action == "quit"
             println("\nThanks for playing!")
