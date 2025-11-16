@@ -39,7 +39,7 @@ function generate_enemy(player_level::Int)
         ("Dragon", 260, 40, 22, 140)
     ]
 
-    # Select enemy pool based on player level
+
     if player_level >= 20
         enemy_pool = vcat(basic_enemies, tier1_enemies, tier2_enemies, tier3_enemies, tier4_enemies)
     elseif player_level >= 15

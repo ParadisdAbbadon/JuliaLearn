@@ -15,7 +15,7 @@ function create_character(class_choice::Int, name::String)
     end
 end
 
-# Update HP
+
 function update_hp(char::Warrior, new_hp::Int)
     return Warrior(char.name, new_hp, char.max_hp, char.attack, char.defense, char.special_ability)
 end
@@ -28,12 +28,12 @@ function update_hp(char::Archer, new_hp::Int)
     return Archer(char.name, new_hp, char.max_hp, char.attack, char.defense, char.agility, char.special_ability)
 end
 
-# Update mana
+
 function update_mana(char::Warlock, new_mana::Int)
     return Warlock(char.name, char.hp, char.max_hp, char.attack, char.defense, new_mana, char.max_mana, char.special_ability)
 end
 
-# Update attack
+
 function update_attack(char::Warrior, new_attack::Int)
     return Warrior(char.name, char.hp, char.max_hp, new_attack, char.defense, char.special_ability)
 end
@@ -46,7 +46,7 @@ function update_attack(char::Archer, new_attack::Int)
     return Archer(char.name, char.hp, char.max_hp, new_attack, char.defense, char.agility, char.special_ability)
 end
 
-# Level up
+
 function level_up_character(char::Warrior)
     return Warrior(char.name, char.max_hp + 20, char.max_hp + 20, char.attack + 3, char.defense + 2, char.special_ability)
 end

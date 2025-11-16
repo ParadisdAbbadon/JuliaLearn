@@ -27,7 +27,7 @@ function game_loop()
     while class_choice < 1 || class_choice > 3
         input = lowercase(strip(readline()))
 
-        # Handle both number and name input
+
         if input == "1" || input == "warrior"
             class_choice = 1
         elseif input == "2" || input == "warlock"
