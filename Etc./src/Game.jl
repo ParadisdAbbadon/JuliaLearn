@@ -11,7 +11,18 @@ export game_loop
 
 function game_loop()
     println("═══════════════════════════════════")
-    println("    WELCOME TO THE DUNGEON RPG")
+    println("     /                    ")
+    println("O===[====================-")
+    println("     \\                    ")
+    println("\n")
+    println("~o~o~o~o~o~o~o~o~o~o~o~o~o~o~o~o~o~")
+    println("----WELCOME TO DUNGEON RUNNER------")
+    println("~o~o~o~o~o~o~o~o~o~o~o~o~o~o~o~o~o~")
+    println("\n")
+    println("     /                    ")
+    println("O===[====================-")
+    println("     \\                    ")
+
     println("═══════════════════════════════════\n")
 
     print("Enter your character name: ")
