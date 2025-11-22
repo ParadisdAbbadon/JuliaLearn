@@ -1,8 +1,7 @@
 module Game
-
 import ..Types: Player
 import ..Characters: create_character
-import ..Display: display_stats
+import ..Display
 import ..Enemies: generate_enemy
 import ..Combat: combat
 import ..Shop: shop
@@ -38,7 +37,7 @@ function game_loop()
     while class_choice < 1 || class_choice > 3
         input = lowercase(strip(readline()))
 
-
+        # Handle both number and name input
         if input == "1" || input == "warrior"
             class_choice = 1
         elseif input == "2" || input == "warlock"
@@ -58,7 +57,8 @@ function game_loop()
     println("\n⚔️  Your adventure begins, $(char_name)!")
 
     while player.character.hp > 0
-        display_stats(player)
+        Display.clear_screen()
+        Display.display_stats(player)
         println("Actions: explore | stats | shop | quit")
         print("> ")
         action = lowercase(strip(readline()))
@@ -68,6 +68,7 @@ function game_loop()
             player, won = combat(player, enemy)
 
             if player.character.hp <= 0
+                Display.clear_screen()
                 println("\n═══════════════════════════════════")
                 println("         GAME OVER")
                 println("    Final Level: $(player.level)")
@@ -76,12 +77,15 @@ function game_loop()
             end
 
         elseif action == "stats"
-            display_stats(player)
+            Display.clear_screen()
+            Display.display_stats(player)
 
         elseif action == "shop"
+            Display.clear_screen()
             shop(player)
 
         elseif action == "quit"
+            Display.clear_screen()
             println("\nThanks for playing!")
             break
         else

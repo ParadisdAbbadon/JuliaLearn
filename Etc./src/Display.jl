@@ -1,8 +1,15 @@
 module Display
-
 import ..Types: Player, Enemy, Warlock, Archer
 
-export display_stats, display_enemy, display_combat_status
+export display_stats, display_enemy, display_combat_status, clear_screen
+
+function clear_screen()
+    if Sys.iswindows()
+        run(`cmd /c cls`)
+    else
+        run(`clear`)
+    end
+end
 
 function display_stats(player::Player)
     char = player.character
