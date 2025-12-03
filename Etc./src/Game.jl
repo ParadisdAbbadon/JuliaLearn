@@ -5,6 +5,7 @@ import ..Display
 import ..Enemies: generate_enemy
 import ..Combat: combat
 import ..Shop: shop
+import ..Story: get_wake_story, print_story_slowly
 
 export game_loop
 
@@ -54,7 +55,14 @@ function game_loop()
 
     player = Player(character, 1, 0, 100, 0, 3, 0)
 
-    println("\n⚔️  Your adventure begins, $(char_name)!")
+    println("\n⚔️  Your adventure begins, $(char_name)!\n")
+
+    # Display the story character by character
+    story = get_wake_story(char_name)
+    print_story_slowly(story)
+
+    println("\nPress Enter to continue...")
+    readline()
 
     while player.character.hp > 0
         Display.clear_screen()

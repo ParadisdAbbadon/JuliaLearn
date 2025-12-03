@@ -1,4 +1,6 @@
 module DungeonRPG
+# Assets
+include("assets/Story.jl")
 # src
 include("src/Types.jl")
 include("src/Characters.jl")
@@ -7,9 +9,6 @@ include("src/Enemies.jl")
 include("src/Combat.jl")
 include("src/Shop.jl")
 include("src/Game.jl")
-
-# Assets
-include("assets/Story.jl")
 
 using .Game
 export game_loop
