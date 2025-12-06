@@ -20,6 +20,12 @@ function generate_enemy(player_level::Int)
         ("Blood Wolf", 100, 20, 9, 60)
     ]
 
+    #Tier 1 mini-bosses (levels 7-9)
+    tier1_minibosses = [
+        ("Goblin King", 150, 22, 10, 80),
+        ("Orc Chieftain", 160, 24, 12, 90)
+    ]
+
     # Tier 2 enemies (levels 10-14)
     tier2_enemies = [
         ("Shadow Knight", 140, 24, 12, 75),
@@ -46,6 +52,8 @@ function generate_enemy(player_level::Int)
         enemy_pool = vcat(basic_enemies, tier1_enemies, tier2_enemies, tier3_enemies)
     elseif player_level >= 10
         enemy_pool = vcat(basic_enemies, tier1_enemies, tier2_enemies)
+    elseif player_level >= 7 && player_level < 10
+        enemy_pool = vcat(basic_enemies, tier1_enemies, tier1_minibosses)
     elseif player_level >= 5
         enemy_pool = vcat(basic_enemies, tier1_enemies)
     else

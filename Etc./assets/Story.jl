@@ -1,12 +1,7 @@
 module Story
 
-export get_wake_story, print_story_slowly
+export get_wake_story, get_dungeon_one_unlocked, print_story_slowly
 
-"""
-    get_wake_story(char_name::String)
-
-Returns the wake story with the character's name interpolated.
-"""
 function get_wake_story(char_name::String)
     return """You awaken in a dimly lit forest, your head throbbing with pain.
 The last thing you remember is being separated from your party during a long battle
@@ -45,12 +40,30 @@ friends, and perhaps your lost memories, you must venture into the dungeons. Wit
 you gather your belongings and prepare to face the challenges ahead.\n"""
 end
 
-"""
-    print_story_slowly(story::String, delay::Float64=0.03)
+function get_dungeon_one_unlocked()
+    return """While checking the enemy's belongings, you find a worn-out map with a marked location.
+    Comparing the enemy's map to your own, you realize that the marked location corresponds to ruins
+    nearby the tavern. You deduce that these ruins might be the entrance to the dungeon your barkeep 
+    mentioned. 
 
+    Perhaps you should stock up on supplies at the tavern's shop before heading to the ruins to 
+    investigate?\n"""
+
+end
+
+function get_dungeon_one_entry(char_name::String)
+    return """As you step into the dimly lit dungeon, the air is icy and thick with the scent of damp 
+    stone. The wrought iron gate clangs shut behind you, echoing throughout the chasm ahead. 
+
+    You light a torch, the warmth of the flame pushing back the darkness, and begin your descent into the 
+    unknown.\n"""
+
+end
+
+#=
 Prints the story one character at a time with a delay between each character.
 Default delay is 0.03 seconds (30ms) for a typewriter effect.
-"""
+=#
 function print_story_slowly(story::String, delay::Float64=0.03)
     for char in story
         print(char)

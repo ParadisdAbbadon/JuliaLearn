@@ -5,7 +5,7 @@ import ..Display
 import ..Enemies: generate_enemy
 import ..Combat: combat
 import ..Shop: shop
-import ..Story: get_wake_story, print_story_slowly
+import ..Story: get_wake_story, get_dungeon_one_unlocked, print_story_slowly
 
 export game_loop
 
@@ -53,7 +53,7 @@ function game_loop()
 
     character = create_character(class_choice, char_name)
 
-    player = Player(character, 1, 0, 100, 0, 3, 0)
+    player = Player(character, 1, 0, 100, 0, 3, 0, false)
 
     println("\n⚔️  Your adventure begins, $(char_name)!\n")
 
@@ -74,6 +74,17 @@ function game_loop()
         if action == "explore"
             enemy = generate_enemy(player.level)
             player, won = combat(player, enemy)
+
+            # Check for tier 1 mini-boss defeat to trigger dungeon story
+            if won && !player.dungeon_one_unlocked &&
+               player.level >= 7 && player.level <= 10 &&
+               enemy.name in ["Goblin King", "Orc Chieftain"]
+                player.dungeon_one_unlocked = true
+                println()
+                print_story_slowly(get_dungeon_one_unlocked())
+                println("\nPress Enter to continue...")
+                readline()
+            end
 
             if player.character.hp <= 0
                 Display.clear_screen()

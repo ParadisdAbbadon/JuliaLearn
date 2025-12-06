@@ -52,5 +52,6 @@ mutable struct Player
     gold::Int
     potions::Int
     weapon_tier::Int
+    dungeon_one_unlocked::Bool
 end
 end
