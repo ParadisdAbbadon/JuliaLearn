@@ -40,8 +40,8 @@ friends, and perhaps your lost memories, you must venture into the dungeons. Wit
 you gather your belongings and prepare to face the challenges ahead.\n"""
 end
 
-function get_dungeon_one_unlocked()
-    return """While checking the enemy's belongings, you find a worn-out map with a marked location.
+function get_dungeon_one_unlocked(enemy_name::String)
+    return """While checking the $enemy_name's belongings, you find a worn-out map with a marked location.
     Comparing the enemy's map to your own, you realize that the marked location corresponds to ruins
     nearby the tavern. You deduce that these ruins might be the entrance to the dungeon your barkeep 
     mentioned. 

@@ -64,7 +64,7 @@ function shop(player::Player)
                 player.weapon_tier += 1
                 new_attack = player.character.attack + 5
                 player.character = update_attack(player.character, new_attack)
-                println("✅ Purchased $wpn_name! Attack increased to $(new_attack)!")
+                println("✅ Purchased $(wpn_name)! Attack increased to $(new_attack)!")
             elseif wpn_name !== nothing
                 println("❌ Not enough gold!")
             end

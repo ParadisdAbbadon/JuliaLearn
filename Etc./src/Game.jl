@@ -81,7 +81,7 @@ function game_loop()
                enemy.name in ["Goblin King", "Orc Chieftain"]
                 player.dungeon_one_unlocked = true
                 println()
-                print_story_slowly(get_dungeon_one_unlocked())
+                print_story_slowly(get_dungeon_one_unlocked(enemy.name))
                 println("\nPress Enter to continue...")
                 readline()
             end
@@ -107,6 +107,15 @@ function game_loop()
             Display.clear_screen()
             println("\nThanks for playing!")
             break
+        elseif startswith(action, "debug ") #-- debug command
+            level_str = action[7:end]
+            new_level = tryparse(Int, level_str)
+            if new_level !== nothing && new_level >= 1
+                player.level = new_level
+                println("🔧 Debug: Level set to $new_level")
+            else
+                println("🔧 Debug: Invalid level")
+            end
         else
             println("Invalid action!")
         end
