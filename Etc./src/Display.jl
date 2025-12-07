@@ -1,5 +1,6 @@
 module Display
 import ..Types: Player, Enemy, Warlock, Archer
+import ..Types: Condition, CONDITION_CONFIGS
 
 export display_stats, display_enemy, display_combat_status, clear_screen, progress_bar
 
@@ -44,7 +45,7 @@ function display_enemy(enemy::Enemy)
     println("   HP: $(enemy.hp)/$(enemy.max_hp)")
 end
 
-function display_combat_status(player::Player, enemy::Enemy; bleed_turns::Int=0)
+function display_combat_status(player::Player, enemy::Enemy; conditions::Vector{Condition}=Condition[])
     char = player.character
     println("\n═══════════════════════════════════")
     print("\n  You: $(progress_bar(char.hp, char.max_hp)) $(char.hp)/$(char.max_hp) HP")
@@ -53,13 +54,18 @@ function display_combat_status(player::Player, enemy::Enemy; bleed_turns::Int=0)
     end
     println()
 
-
     println("  $(enemy.name): $(progress_bar(enemy.hp, enemy.max_hp)) $(enemy.hp)/$(enemy.max_hp) HP")
     println("\n═══════════════════════════════════")
     println(" ")
 
-    if bleed_turns > 0
-        println("  ⚠️  Status: [BLEEDING - $bleed_turns turn(s)]")
+    # Display all active conditions
+    if !isempty(conditions)
+        status_parts = String[]
+        for cond in conditions
+            config = CONDITION_CONFIGS[cond.type]
+            push!(status_parts, "$(config.icon) $(config.name) - $(cond.turns) turn(s)")
+        end
+        println("  ⚠️  Status: [$(join(status_parts, " | "))]")
         println(" ")
     end
 end

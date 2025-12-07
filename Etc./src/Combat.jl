@@ -1,10 +1,12 @@
 module Combat
 import ..Types: Player, Enemy, Warrior, Warlock, Archer
+import ..Types: Condition, ConditionConfig, CONDITION_CONFIGS
 import ..Characters: update_hp, update_mana, level_up_character
 import ..Display
 
 export combat, calculate_damage, player_attack, player_special
 export enemy_attack, use_potion
+export apply_condition, tick_conditions, has_condition, get_condition
 
 function calculate_damage(attacker_atk::Int, defender_def::Int)
     base_damage = max(1, attacker_atk - defender_def)
@@ -61,21 +63,59 @@ function enemy_attack(player::Player, enemy::Enemy)
     return player
 end
 
-function calculate_condition_damage(player::Player, condition_type::String)
-    if condition_type == "bleed"
-        return round(Int, player.character.max_hp * 0.10)
+# Condition management functions
+function apply_condition(conditions::Vector{Condition}, condition_type::Symbol, turns::Int)
+    # Check if condition already exists, refresh duration if so
+    for cond in conditions
+        if cond.type == condition_type
+            cond.turns = max(cond.turns, turns)
+            return conditions
+        end
     end
-    return 0
+    # Add new condition
+    push!(conditions, Condition(condition_type, turns))
+    return conditions
 end
 
-function deal_condition_damage(player::Player, condition_type::String)
-    damage = calculate_condition_damage(player, condition_type)
-    if damage > 0
-        new_hp = max(0, player.character.hp - damage)
-        player.character = update_hp(player.character, new_hp)
-        println("🩸 You take $damage bleed damage!")
+function has_condition(conditions::Vector{Condition}, condition_type::Symbol)
+    return any(c -> c.type == condition_type, conditions)
+end
+
+function get_condition(conditions::Vector{Condition}, condition_type::Symbol)
+    idx = findfirst(c -> c.type == condition_type, conditions)
+    return idx !== nothing ? conditions[idx] : nothing
+end
+
+function tick_conditions(player::Player, conditions::Vector{Condition})
+    expired = Symbol[]
+
+    for cond in conditions
+        config = CONDITION_CONFIGS[cond.type]
+
+        # Apply damage if condition deals damage
+        if config.damage_percent > 0
+            damage = round(Int, player.character.max_hp * config.damage_percent)
+            new_hp = max(0, player.character.hp - damage)
+            player.character = update_hp(player.character, new_hp)
+            message = replace(config.message, "{damage}" => string(damage))
+            println("$(config.icon) $message")
+        end
+
+        # Decrement turns
+        cond.turns -= 1
+        if cond.turns <= 0
+            push!(expired, cond.type)
+        end
     end
-    return player
+
+    # Remove expired conditions
+    for cond_type in expired
+        config = CONDITION_CONFIGS[cond_type]
+        filter!(c -> c.type != cond_type, conditions)
+        println("   The $(lowercase(config.name)) has worn off.")
+    end
+
+    return player, conditions
 end
 
 function use_potion(player::Player)
@@ -97,23 +137,19 @@ function combat(player::Player, enemy::Enemy)
     Display.display_enemy(enemy)
 
     player_damage = 0
-    bleed_turns = 0
+    conditions = Condition[]
 
     while player.character.hp > 0 && enemy.hp > 0
-        # Apply bleed damage at start of turn
-        if bleed_turns > 0
-            player = deal_condition_damage(player, "bleed")
-            bleed_turns -= 1
-            if bleed_turns == 0
-                println("   The bleeding has stopped.")
-            end
+        # Apply condition effects at start of turn
+        if !isempty(conditions)
+            player, conditions = tick_conditions(player, conditions)
             if player.character.hp <= 0
-                println("\n💀 You have bled out...")
+                println("\n💀 You have succumbed to your afflictions...")
                 return player, false
             end
         end
 
-        Display.display_combat_status(player, enemy; bleed_turns=bleed_turns)
+        Display.display_combat_status(player, enemy; conditions=conditions)
         println("Actions: attack | special | potion | examine | run")
         print("> ")
         action = lowercase(strip(readline()))
@@ -182,8 +218,8 @@ function combat(player::Player, enemy::Enemy)
             new_hp = max(0, player.character.hp - vengeful_damage)
             player.character = update_hp(player.character, new_hp)
             println("👑 Goblin King uses Vengeful Strike for $vengeful_damage damage!")
-        elseif enemy.name == "Orc Chieftain" && bleed_turns == 0
-            bleed_turns = 3
+        elseif enemy.name == "Orc Chieftain" && !has_condition(conditions, :bleed)
+            conditions = apply_condition(conditions, :bleed, 3)
             println("🩸 Orc Chieftain's Serrated Blade causes you to bleed!")
         end
 
