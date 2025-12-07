@@ -113,7 +113,7 @@ function combat(player::Player, enemy::Enemy)
             end
         end
 
-        Display.display_combat_status(player, enemy)
+        Display.display_combat_status(player, enemy; bleed_turns=bleed_turns)
         println("Actions: attack | special | potion | examine | run")
         print("> ")
         action = lowercase(strip(readline()))
