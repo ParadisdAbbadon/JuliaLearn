@@ -200,10 +200,12 @@ function combat(player::Player, enemy::Enemy)
             println("   HP: $(enemy.hp)/$(enemy.max_hp)")
             println("   Attack: $(enemy.attack)")
             println("   Defense: $(enemy.defense)")
-            if enemy.name == "Goblin King"
-                println("   Special: Vengeful Strike - deals half the damage you inflict back to you")
-            elseif enemy.name == "Orc Chieftain"
-                println("   Special: Serrated Blade - inflicts bleed for 3 turns (10% max HP per turn)")
+            if enemy.is_miniboss
+                if enemy.name == "Goblin King"
+                    println("   Special: Vengeful Strike - deals half the damage you inflict back to you")
+                elseif enemy.name == "Orc Chieftain"
+                    println("   Special: Serrated Blade - inflicts bleed for 3 turns (10% max HP per turn)")
+                end
             end
             continue
         elseif action == "run"
@@ -244,14 +246,16 @@ function combat(player::Player, enemy::Enemy)
         player = enemy_attack(player, enemy)
 
         # Mini-boss special attacks
-        if enemy.name == "Goblin King" && player_damage > 0
-            vengeful_damage = round(Int, player_damage / 2)
-            new_hp = max(0, player.character.hp - vengeful_damage)
-            player.character = update_hp(player.character, new_hp)
-            println("👑 Goblin King uses Vengeful Strike for $vengeful_damage damage!")
-        elseif enemy.name == "Orc Chieftain" && !has_condition(conditions, :bleed)
-            conditions = apply_condition(conditions, :bleed, 3)
-            println("🩸 Orc Chieftain's Serrated Blade causes you to bleed!")
+        if enemy.is_miniboss
+            if enemy.name == "Goblin King" && player_damage > 0
+                vengeful_damage = round(Int, player_damage / 2)
+                new_hp = max(0, player.character.hp - vengeful_damage)
+                player.character = update_hp(player.character, new_hp)
+                println("👑 Goblin King uses Vengeful Strike for $vengeful_damage damage!")
+            elseif enemy.name == "Orc Chieftain" && !has_condition(conditions, :bleed)
+                conditions = apply_condition(conditions, :bleed, 3)
+                println("🩸 Orc Chieftain's Serrated Blade causes you to bleed!")
+            end
         end
 
         if player.character.hp <= 0

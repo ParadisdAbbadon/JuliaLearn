@@ -65,6 +65,7 @@ mutable struct Enemy
     attack::Int
     defense::Int
     xp_reward::Int
+    is_miniboss::Bool
 end
 
 mutable struct Player

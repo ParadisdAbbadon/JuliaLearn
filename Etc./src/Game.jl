@@ -78,7 +78,7 @@ function game_loop()
             # Check for tier 1 mini-boss defeat to trigger dungeon story
             if won && !player.dungeon_one_unlocked &&
                player.level >= 7 && player.level <= 10 &&
-               enemy.name in ["Goblin King", "Orc Chieftain"]
+               enemy.is_miniboss
                 player.dungeon_one_unlocked = true
                 println()
                 print_story_slowly(get_dungeon_one_unlocked(enemy.name))
