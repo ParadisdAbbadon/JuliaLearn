@@ -27,7 +27,13 @@ end
 function shop(player::Player)
     println("\n🏪 ═══════════════ SHOP ═══════════════")
     println("Your Gold: $(player.gold)")
-    println("\n1. Health Potion - 20 Gold (Restores 50 HP)")
+    println("\nAvailable Items:")
+    println("  health  - Health Potion (20 Gold) - Restores 50 HP")
+
+    # Show mana potion for Warlocks
+    if isa(player.character, Warlock)
+        println("  mana    - Mana Potion (25 Gold) - Restores 30 MP")
+    end
 
     # Calculate available weapon tier based on level
     available_tier = div(player.level - 1, 5) + 1
@@ -36,18 +42,17 @@ function shop(player::Player)
     if player.level >= 5 && player.weapon_tier < available_tier
         weapon_name, weapon_cost = get_weapon_info(player.character, player.weapon_tier + 1)
         if weapon_name !== nothing
-            println("2. $weapon_name - $weapon_cost Gold (+5 Attack)")
-            println("   ⭐ Unlocked at level $(5 * player.weapon_tier + 5)!")
+            println("  weapon  - $weapon_name ($weapon_cost Gold) - +5 Attack")
+            println("            ⭐ Unlocked at level $(5 * player.weapon_tier + 5)!")
         end
-        println("3. Leave")
-    else
-        println("2. Leave")
     end
 
-    print("> ")
-    shop_choice = readline()
+    println("  back    - Return to town")
 
-    if shop_choice == "1"
+    print("> ")
+    shop_choice = lowercase(strip(readline()))
+
+    if shop_choice == "health"
         if player.gold >= 20
             player.gold -= 20
             player.potions += 1
@@ -55,8 +60,15 @@ function shop(player::Player)
         else
             println("❌ Not enough gold!")
         end
-    elseif shop_choice == "2"
-        # Check if option 2 is a weapon or leave
+    elseif shop_choice == "mana" && isa(player.character, Warlock)
+        if player.gold >= 25
+            player.gold -= 25
+            player.mana_potions += 1
+            println("✅ Purchased Mana Potion!")
+        else
+            println("❌ Not enough gold!")
+        end
+    elseif shop_choice == "weapon"
         if player.level >= 5 && player.weapon_tier < available_tier
             wpn_name, wpn_cost = get_weapon_info(player.character, player.weapon_tier + 1)
             if wpn_name !== nothing && player.gold >= wpn_cost
@@ -67,11 +79,16 @@ function shop(player::Player)
                 println("✅ Purchased $(wpn_name)! Attack increased to $(new_attack)!")
             elseif wpn_name !== nothing
                 println("❌ Not enough gold!")
+            else
+                println("❌ No weapon available!")
             end
+        else
+            println("❌ No weapon upgrade available at your level!")
         end
-    elseif shop_choice == "3" && player.level >= 5 && player.weapon_tier < available_tier
-        # Leave shop (only option 3 if weapon is available)
+    elseif shop_choice == "back"
         return
+    else
+        println("❌ Invalid choice!")
     end
 end
 end

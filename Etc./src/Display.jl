@@ -36,7 +36,11 @@ function display_stats(player::Player)
     println("  Defense: $(char.defense)")
     println("  XP:  $(progress_bar(player.xp, player.xp_to_next)) $(player.xp)/$(player.xp_to_next)")
     println("  Gold: $(player.gold)")
-    println("  Potions: $(player.potions)")
+    print("  Potions: $(player.potions) HP")
+    if isa(char, Warlock)
+        print(" | $(player.mana_potions) MP")
+    end
+    println()
     println("═══════════════════════════════════\n")
 end
 

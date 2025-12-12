@@ -53,7 +53,7 @@ function game_loop()
 
     character = create_character(class_choice, char_name)
 
-    player = Player(character, 1, 0, 100, 0, 3, 0, false)
+    player = Player(character, 1, 0, 100, 0, 3, 0, 0, false)
 
     println("\n⚔️  Your adventure begins, $(char_name)!\n")
 

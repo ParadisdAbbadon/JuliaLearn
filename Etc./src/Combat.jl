@@ -5,7 +5,7 @@ import ..Characters: update_hp, update_mana, level_up_character
 import ..Display
 
 export combat, calculate_damage, player_attack, player_special
-export enemy_attack, use_potion
+export enemy_attack, use_potion, use_mana_potion
 export apply_condition, tick_conditions, has_condition, get_condition
 
 function calculate_damage(attacker_atk::Int, defender_def::Int)
@@ -125,9 +125,27 @@ function use_potion(player::Player)
         new_hp = min(char.max_hp, char.hp + 50)
         player.character = update_hp(char, new_hp)
         player.potions -= 1
-        println("\n🧪 You drink a potion and restore $heal_amount HP!")
+        println("\n🧪 You drink a health potion and restore $heal_amount HP!")
     else
-        println("\n❌ You don't have any potions!")
+        println("\n❌ You don't have any health potions!")
+    end
+    return player
+end
+
+function use_mana_potion(player::Player)
+    char = player.character
+    if !isa(char, Warlock)
+        println("\n❌ Only Warlocks can use mana potions!")
+        return player
+    end
+    if player.mana_potions > 0
+        restore_amount = min(30, char.max_mana - char.mana)
+        new_mana = min(char.max_mana, char.mana + 30)
+        player.character = update_mana(char, new_mana)
+        player.mana_potions -= 1
+        println("\n🔮 You drink a mana potion and restore $restore_amount MP!")
+    else
+        println("\n❌ You don't have any mana potions!")
     end
     return player
 end
@@ -162,7 +180,20 @@ function combat(player::Player, enemy::Enemy)
         elseif action == "special"
             player, enemy, player_damage = player_special(player, enemy)
         elseif action == "potion"
-            player = use_potion(player)
+            print("  Potion type (health")
+            if isa(player.character, Warlock)
+                print(" | mana")
+            end
+            println(" | back):")
+            print("  > ")
+            potion_choice = lowercase(strip(readline()))
+            if potion_choice == "health"
+                player = use_potion(player)
+            elseif potion_choice == "mana" && isa(player.character, Warlock)
+                player = use_mana_potion(player)
+            elseif potion_choice != "back"
+                println("\n❌ Invalid potion choice!")
+            end
             player_damage = 0
         elseif action == "examine"
             println("\n🔍 $(enemy.name)")

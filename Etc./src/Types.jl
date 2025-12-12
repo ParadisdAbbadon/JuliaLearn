@@ -74,6 +74,7 @@ mutable struct Player
     xp_to_next::Int
     gold::Int
     potions::Int
+    mana_potions::Int
     weapon_tier::Int
     dungeon_one_unlocked::Bool
 end
