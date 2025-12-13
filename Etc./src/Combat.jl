@@ -156,6 +156,8 @@ function combat(player::Player, enemy::Enemy)
 
     player_damage = 0
     conditions = Condition[]
+    is_blocking = false
+    has_block_bonus = false
 
     while player.character.hp > 0 && enemy.hp > 0
         # Apply condition effects at start of turn
@@ -168,17 +170,37 @@ function combat(player::Player, enemy::Enemy)
         end
 
         Display.display_combat_status(player, enemy; conditions=conditions)
-        println("Actions: attack | special | potion | examine | run")
+        if isa(player.character, Warrior)
+            println("Actions: attack | special | block | potion | examine | run")
+        else
+            println("Actions: attack | special | potion | examine | run")
+        end
         print("> ")
         action = lowercase(strip(readline()))
 
         Display.clear_screen()
         Display.display_enemy(enemy)
 
+        # Reset blocking state at start of action
+        is_blocking = false
+
         if action == "attack"
             enemy, player_damage = player_attack(player, enemy)
+            # Apply block bonus if active
+            if has_block_bonus
+                bonus_damage = round(Int, player_damage * 0.10)
+                enemy.hp -= bonus_damage
+                player_damage += bonus_damage
+                println("   🛡️ Riposte! +$bonus_damage bonus damage!")
+                has_block_bonus = false
+            end
         elseif action == "special"
             player, enemy, player_damage = player_special(player, enemy)
+            has_block_bonus = false  # Special attacks don't get block bonus
+        elseif action == "block" && isa(player.character, Warrior)
+            is_blocking = true
+            println("\n🛡️ You raise your guard!")
+            player_damage = 0
         elseif action == "potion"
             print("  Potion type (health")
             if isa(player.character, Warlock)
@@ -243,7 +265,31 @@ function combat(player::Player, enemy::Enemy)
         end
 
         # Enemy turn
-        player = enemy_attack(player, enemy)
+        if is_blocking && isa(player.character, Warrior)
+            # Block attempt: 60% success chance
+            if rand() < 0.60
+                # Calculate block percentage: 30% base + 0.5% per defense
+                block_percent = 0.30 + (player.character.defense * 0.005)
+
+                # Calculate incoming damage
+                char = player.character
+                incoming_damage = calculate_damage(enemy.attack, char.defense)
+                blocked_damage = round(Int, incoming_damage * block_percent)
+                actual_damage = incoming_damage - blocked_damage
+
+                new_hp = max(0, char.hp - actual_damage)
+                player.character = update_hp(char, new_hp)
+
+                println("🛡️ You block $(enemy.name)'s attack! (-$blocked_damage damage)")
+                println("   You take $actual_damage damage instead of $incoming_damage!")
+                has_block_bonus = true
+            else
+                println("🛡️ Your block failed!")
+                player = enemy_attack(player, enemy)
+            end
+        else
+            player = enemy_attack(player, enemy)
+        end
 
         # Mini-boss special attacks
         if enemy.is_miniboss
