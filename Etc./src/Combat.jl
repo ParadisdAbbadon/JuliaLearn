@@ -21,7 +21,7 @@ function player_attack(player::Player, enemy::Enemy)
     return enemy, damage
 end
 
-function player_special(player::Player, enemy::Enemy)
+function player_special(player::Player, enemy::Enemy; has_dodge_bonus::Bool=false)
     char = player.character
     damage = 0
 
@@ -42,10 +42,19 @@ function player_special(player::Player, enemy::Enemy)
         end
 
     elseif isa(char, Archer)
-        if rand() < 0.7  # 70% hit chance
+        # 70% base hit chance, +20% if dodge bonus active
+        hit_chance = has_dodge_bonus ? 0.90 : 0.70
+        if rand() < hit_chance
             damage = calculate_damage(char.attack + char.agility, enemy.defense)
+            # Apply +15% damage bonus if dodge bonus active
+            if has_dodge_bonus
+                bonus_damage = round(Int, damage * 0.15)
+                damage += bonus_damage
+                println("\n🏹 $(char.special_ability)! 💨 Precision strike for $damage damage!")
+            else
+                println("\n🏹 $(char.special_ability)! Critical hit for $damage damage!")
+            end
             enemy.hp -= damage
-            println("\n🏹 $(char.special_ability)! Critical hit for $damage damage!")
         else
             println("\n🏹 $(char.special_ability) missed!")
         end
@@ -158,6 +167,8 @@ function combat(player::Player, enemy::Enemy)
     conditions = Condition[]
     is_blocking = false
     has_block_bonus = false
+    is_dodging = false
+    has_dodge_bonus = false
 
     while player.character.hp > 0 && enemy.hp > 0
         # Apply condition effects at start of turn
@@ -172,6 +183,8 @@ function combat(player::Player, enemy::Enemy)
         Display.display_combat_status(player, enemy; conditions=conditions)
         if isa(player.character, Warrior)
             println("Actions: attack | special | block | potion | examine | run")
+        elseif isa(player.character, Archer)
+            println("Actions: attack | special | dodge | potion | examine | run")
         else
             println("Actions: attack | special | potion | examine | run")
         end
@@ -181,8 +194,9 @@ function combat(player::Player, enemy::Enemy)
         Display.clear_screen()
         Display.display_enemy(enemy)
 
-        # Reset blocking state at start of action
+        # Reset blocking/dodging state at start of action
         is_blocking = false
+        is_dodging = false
 
         if action == "attack"
             enemy, player_damage = player_attack(player, enemy)
@@ -194,12 +208,27 @@ function combat(player::Player, enemy::Enemy)
                 println("   🛡️ Riposte! +$bonus_damage bonus damage!")
                 has_block_bonus = false
             end
+            # Apply dodge bonus if active (+15% damage)
+            if has_dodge_bonus
+                bonus_damage = round(Int, player_damage * 0.15)
+                enemy.hp -= bonus_damage
+                player_damage += bonus_damage
+                println("   💨 Swift Strike! +$bonus_damage bonus damage!")
+                has_dodge_bonus = false
+            end
         elseif action == "special"
-            player, enemy, player_damage = player_special(player, enemy)
+            player, enemy, player_damage = player_special(player, enemy; has_dodge_bonus=has_dodge_bonus)
             has_block_bonus = false  # Special attacks don't get block bonus
+            if isa(player.character, Archer)
+                has_dodge_bonus = false  # Consume dodge bonus on special attack
+            end
         elseif action == "block" && isa(player.character, Warrior)
             is_blocking = true
             println("\n🛡️ You raise your guard!")
+            player_damage = 0
+        elseif action == "dodge" && isa(player.character, Archer)
+            is_dodging = true
+            println("\n💨 You prepare to evade!")
             player_damage = 0
         elseif action == "potion"
             print("  Potion type (health")
@@ -285,6 +314,17 @@ function combat(player::Player, enemy::Enemy)
                 has_block_bonus = true
             else
                 println("🛡️ Your block failed!")
+                player = enemy_attack(player, enemy)
+            end
+        elseif is_dodging && isa(player.character, Archer)
+            # Dodge attempt: 50% base + 0.3% per agility
+            dodge_chance = 0.50 + (player.character.agility * 0.003)
+            if rand() < dodge_chance
+                println("💨 You dodge $(enemy.name)'s attack!")
+                println("   Next attack: +20% hit chance, +15% damage!")
+                has_dodge_bonus = true
+            else
+                println("💨 Your dodge failed!")
                 player = enemy_attack(player, enemy)
             end
         else
