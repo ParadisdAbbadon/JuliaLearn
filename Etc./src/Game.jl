@@ -28,26 +28,64 @@ function game_loop()
     print("Enter your character name: ")
     char_name = readline()
 
-    println("\nChoose your class:")
-    println("1. Warrior - High HP and Defense")
-    println("2. Warlock - Powerful magic attacks")
-    println("3. Archer - Quick and agile")
-    print("> ")
+    println("\n═══════════════════════════════════")
+    println("         CHOOSE YOUR CLASS")
+    println("═══════════════════════════════════")
+    println()
+    println("1. WARRIOR")
+    println("   A stalwart fighter with high HP and defense.")
+    println("   • Special: Power Strike (2x attack damage)")
+    println("   • Unique: Can block attacks to reduce damage")
+    println("   • Best for: Players who prefer a tanky playstyle")
+    println()
+    println("2. WARLOCK")
+    println("   A dark mage wielding devastating magical power.")
+    println("   • Special: Dark Bolt (2x attack, costs 15 mana)")
+    println("   • Unique: Uses mana for spells, can buy mana potions")
+    println("   • Best for: Players who want high burst damage")
+    println()
+    println("3. ARCHER")
+    println("   A nimble ranger with deadly precision.")
+    println("   • Special: Quick Shot (70% hit chance, bonus agility damage)")
+    println("   • Unique: High agility increases special attack damage")
+    println("   • Best for: Players who enjoy risk/reward gameplay")
+    println()
+    println("═══════════════════════════════════")
+    print("Enter choice (1/2/3 or class name): ")
 
+    class_names = ["Warrior", "Warlock", "Archer"]
     class_choice = 0
-    while class_choice < 1 || class_choice > 3
-        input = lowercase(strip(readline()))
+    confirmed = false
 
-        # Handle both number and name input
-        if input == "1" || input == "warrior"
-            class_choice = 1
-        elseif input == "2" || input == "warlock"
-            class_choice = 2
-        elseif input == "3" || input == "archer"
-            class_choice = 3
+    while !confirmed
+        # Get class selection
+        while class_choice < 1 || class_choice > 3
+            input = lowercase(strip(readline()))
+
+            # Handle both number and name input
+            if input == "1" || input == "warrior"
+                class_choice = 1
+            elseif input == "2" || input == "warlock"
+                class_choice = 2
+            elseif input == "3" || input == "archer"
+                class_choice = 3
+            else
+                println("Invalid choice! Please enter 1, 2, 3 or the class name.")
+                print("> ")
+            end
+        end
+
+        # Confirm selection
+        println("\nYou selected: $(class_names[class_choice])")
+        print("Confirm? (yes/no): ")
+        confirm_input = lowercase(strip(readline()))
+
+        if confirm_input == "yes" || confirm_input == "y"
+            confirmed = true
         else
-            println("Invalid choice! Please enter 1, 2, 3 or the class name.")
-            print("> ")
+            println("\nPlease choose again.")
+            print("Enter choice (1/2/3 or class name): ")
+            class_choice = 0
         end
     end
 
