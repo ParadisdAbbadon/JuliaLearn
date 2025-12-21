@@ -273,6 +273,7 @@ function combat(player::Player, enemy::Enemy)
         end
 
         if enemy.hp <= 0
+            Display.clear_screen()
             println("\n🎉 Victory! $(enemy.name) defeated!")
             player.xp += enemy.xp_reward
             gold_reward = rand(5:15)
@@ -290,6 +291,9 @@ function combat(player::Player, enemy::Enemy)
                 println("   Stats increased!")
             end
 
+            print("\nPress enter to continue...")
+            readline()
+            Display.clear_screen()
             return player, true
         end
 
