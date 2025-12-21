@@ -1,6 +1,6 @@
 module Game
-import ..Types: Player
-import ..Characters: create_character
+import ..Types: Player, Warlock
+import ..Characters: create_character, update_hp, update_mana
 import ..Display
 import ..Enemies: generate_enemy
 import ..Combat: combat
@@ -106,7 +106,7 @@ function game_loop()
     while player.character.hp > 0
         Display.clear_screen()
         Display.display_stats(player)
-        println("Actions: explore | stats | shop | quit")
+        println("Actions: explore | rest | stats | shop | quit")
         print("> ")
         action = lowercase(strip(readline()))
 
@@ -132,6 +132,29 @@ function game_loop()
                 println("    Final Level: $(player.level)")
                 println("═══════════════════════════════════")
                 break
+            end
+
+        elseif action == "rest"
+            if player.gold >= 10
+                print("\n🛏️  Rest at the tavern for 10 gold? (yes/no): ")
+                confirm = lowercase(strip(readline()))
+                if confirm == "yes" || confirm == "y"
+                    player.gold -= 10
+                    char = player.character
+                    player.character = update_hp(char, char.max_hp)
+                    if isa(char, Warlock)
+                        player.character = update_mana(player.character, player.character.max_mana)
+                        println("\n🛏️  You rest at the tavern. HP and Mana fully restored! (-10 gold)")
+                    else
+                        println("\n🛏️  You rest at the tavern. HP fully restored! (-10 gold)")
+                    end
+                    print("\nPress enter to continue...")
+                    readline()
+                end
+            else
+                println("\n❌ Not enough gold! Resting costs 10 gold.")
+                print("\nPress enter to continue...")
+                readline()
             end
 
         elseif action == "stats"
