@@ -93,6 +93,7 @@ function game_loop()
 
     player = Player(character, 1, 0, 100, 0, 3, 0, 0, false)
 
+    Display.clear_screen()
     println("\n⚔️  Your adventure begins, $(char_name)!\n")
 
     # Display the story character by character
