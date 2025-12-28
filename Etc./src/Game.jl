@@ -25,6 +25,22 @@ function game_loop()
 
     println("═══════════════════════════════════\n")
 
+    println("Enter 'Start' to begin or 'Quit' to exit")
+    print("> ")
+    while true
+        start_input = lowercase(strip(readline()))
+        if start_input == "start"
+            break
+        elseif start_input == "quit"
+            println("\nGoodbye!")
+            return
+        else
+            println("Invalid input. Enter 'Start' or 'Quit'")
+            print("> ")
+        end
+    end
+
+    println()
     print("Enter your character name: ")
     char_name = readline()
 
@@ -136,6 +152,7 @@ function game_loop()
 
         elseif action == "rest"
             if player.gold >= 10
+                Display.clear_screen()
                 print("\n🛏️  Rest at the tavern for 10 gold? (yes/no): ")
                 confirm = lowercase(strip(readline()))
                 if confirm == "yes" || confirm == "y"
