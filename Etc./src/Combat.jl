@@ -163,6 +163,10 @@ function combat(player::Player, enemy::Enemy)
     Display.clear_screen()
     Display.display_enemy(enemy)
 
+    if enemy.is_miniboss
+        println("⚠️  Something about this enemy seems different to you.\n")
+    end
+
     player_damage = 0
     conditions = Condition[]
     is_blocking = false
